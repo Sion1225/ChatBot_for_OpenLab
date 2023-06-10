@@ -76,6 +76,9 @@ class CustomT5Model(tf.keras.Model):
         super(CustomT5Model, self).__init__(*args, **kwargs)
         self.t5 = TFMT5ForConditionalGeneration.from_pretrained(model_name)
     
+    def call(self, inputs, training=False):
+        return self.t5(*inputs, training=training)
+    
     def train_step(self, data):
         data = data[0]
         if len(data) == 3:
@@ -99,11 +102,14 @@ loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 model = CustomT5Model("google/mt5-base")
 model.compile(optimizer=optimizer, loss=loss)
 # model fit
-model.fit([X_id_train, X_mask_train, y_id_train], epochs=4, batch_size=2, validation_split=0.2)
+model.fit([X_id_train, X_mask_train, y_id_train], epochs=4, batch_size=16, validation_split=0.2)
 
 # model evaluate
 results = model.evaluate((X_id_test, X_mask_test), np.squeeze(y_id_test))
 print(f"Test loss: {results[0]}")
+
+# model save
+model.save("Models/mT5_ja.h5")
 
 # test
 test = [["質問: 日本語話せる？"]]
