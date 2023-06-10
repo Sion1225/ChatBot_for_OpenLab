@@ -96,6 +96,13 @@ class CustomT5Model(tf.keras.Model):
         
         return {"loss": loss}
 
+    def get_config(self):
+        return {"model_name": self.model_name}  # Returns the actual model_name used.
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
+'''
 # Instantiate the custom model and compile
 optimizer = tf.keras.optimizers.Adam(learning_rate=5e-5)
 loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
@@ -104,12 +111,20 @@ model.compile(optimizer=optimizer, loss=loss)
 # model fit
 model.fit([X_id_train, X_mask_train, y_id_train], epochs=4, batch_size=16, validation_split=0.2)
 
-# model evaluate
-results = model.evaluate((X_id_test, X_mask_test), np.squeeze(y_id_test))
-print(f"Test loss: {results[0]}")
-
 # model save
-model.save("Models/mT5_ja.h5")
+model.save("ChatBot_for_OpenLab/Models/mT5_ja", save_format="tf")
+'''
+
+# model load
+model = tf.keras.models.load_model("ChatBot_for_OpenLab/Models/mT5_ja", custom_objects={"CustomT5Model": CustomT5Model})
+
+# model evaluate
+start_tokens = np.ones((len(X_id_test), 1)) * tokenizer.pad_token_id
+X_id_test_with_start = np.concatenate([start_tokens, X_id_test[:, :-1]], axis=-1)
+
+results = model.evaluate((X_id_test_with_start, X_mask_test, X_id_test_with_start), np.squeeze(y_id_test))
+
+print(f"Test loss: {results[0]}")
 
 # test
 test = [["質問: 日本語話せる？"]]
