@@ -95,14 +95,15 @@ class CustomT5Model(tf.keras.Model):
         self.optimizer.apply_gradients(zip(gradients, trainable_vars))
         
         return {"loss": loss}
-
+'''
     def get_config(self):
         return {"model_name": self.model_name}  # Returns the actual model_name used.
 
     @classmethod
     def from_config(cls, config):
         return cls(**config)
-'''
+        
+
 # Instantiate the custom model and compile
 optimizer = tf.keras.optimizers.Adam(learning_rate=5e-5)
 loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
@@ -116,7 +117,8 @@ model.save("ChatBot_for_OpenLab/Models/mT5_ja", save_format="tf")
 '''
 
 # model load
-model = tf.keras.models.load_model("ChatBot_for_OpenLab/Models/mT5_ja", custom_objects={"CustomT5Model": CustomT5Model})
+#model = tf.keras.models.load_model("ChatBot_for_OpenLab/Models/mT5_ja", custom_objects={"CustomT5Model": CustomT5Model})
+model = TFMT5ForConditionalGeneration.from_pretrained("ChatBot_for_OpenLab/Models/mT5_ja")
 
 # model evaluate
 start_tokens = np.ones((len(X_id_test), 1)) * tokenizer.pad_token_id
